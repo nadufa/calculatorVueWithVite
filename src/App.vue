@@ -1,7 +1,7 @@
 <template>
   <div :class="['Wrapper', { SeaThemeWrapper: this.state.seaTheme }]">
     <div :class="['Calculator', { SeaThemeCalculator: this.state.seaTheme }]">
-      <ResultField :seaTheme="state.seaTheme" :result="state.resultArray.join('')" />
+      <ResultField :seaTheme="state.seaTheme" :result="state.resultArray.join('')"/>
       <MyButtons
           :seaTheme="state.seaTheme"
           :updateResultValue="onButtonClick"
@@ -134,6 +134,7 @@ export default {
       }
 
       function addToExpression(value) {
+        console.log(expression )
         if (expression.length === 0 && isMathOperator(value) && value !== "-") {
           alert("you can not start expression with this math operator");
         } else {
@@ -150,7 +151,7 @@ export default {
       }
 
       function isMathOperator(value) {
-        return ["+", "-", "*", "/", ",", "%", ",", "+/-"].includes(value);
+        return ["+", "-", "*", "/", "%", "+/-"].includes(value);
       }
 
       function clearExpression() {
@@ -182,19 +183,45 @@ export default {
       }
 
       function calculateExpression() {
-        let expressionString = expression.join("");
+        let expressionString = percentCase().join("");
         let result;
         try {
           result = Function(`'use strict'; return (${expressionString})`)();
         } catch (error) {
           result = "Error";
         }
-
         return result;
       }
-    },
+
+      function percentCase() {
+        let newExpression = [...expression]
+        console.log(newExpression)
+        for (let i = 0; i < newExpression.length; i++) {
+          if (newExpression[i] === "%") {
+            let numBefore = []
+            let numAfter = []
+            let startPercentCase = null
+            let endPercentCase = null
+            for (let j = i - 1; !isMathOperator(newExpression[j]) && j >= 0; j--) {
+              numBefore.unshift(newExpression[j])
+              startPercentCase = j
+            }
+            for (let j = i + 1; !isMathOperator(newExpression[j])  && j < newExpression.length; j++) {
+              numAfter.push(newExpression[j])
+              endPercentCase = i++
+            }
+            let firstStr = numBefore.join('')
+            let secondStr = numAfter.join('')
+            let resultPercentCase = ((+firstStr * 100) / +secondStr).toString().split('')
+            newExpression.splice(startPercentCase, newExpression.length - endPercentCase + 1, ...resultPercentCase)
+            return newExpression
+          }
+        }
+      }
+    }
   },
-};
+}
+
 </script>
 
 <style>
