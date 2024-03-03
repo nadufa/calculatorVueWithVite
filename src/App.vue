@@ -136,26 +136,30 @@ export default {
         let newExpression = [...expression]
         if (newExpression.length === 0 && isMathOperator(value) && value !== "-") {
           alert("you can not start expression with this math operator");
+        } else if([...newExpression].join("") === "Infinity") {
+          newExpression = addToExpression([], value)
         } else {
           const lastElement = newExpression[newExpression.length - 1];
           if (
               (lastElement && isMathOperator(lastElement) && isMathOperator(value)) ||
-              (newExpression.length === 1 && (newExpression[0] === "0" || newExpression[0] === "Infinity"))
+              (newExpression.length === 1 && (newExpression[0] === "0"))
           ) {
             newExpression[newExpression.length - 1] = value;
-          } else if (newExpression.length <= 50) {
+          } else if (newExpression.length <= 11) {
             newExpression.push(value);
+          } else {
+            alert('Max length is 10')
           }
         }
         return newExpression
       }
 
       function isMathOperator(value) {
-        return ["+", "-", "*", "/", "%", "+/-"].includes(value);
+        return ["+", "-", "*", "/", "%"].includes(value);
       }
 
-      // function containsMathOperator(mathOperator, expression) {
-      //   return expression.includes(mathOperator);
+      // function isMinus(value) {
+      //   return value === "-"
       // }
 
       function clearExpression(expression) {
@@ -224,9 +228,7 @@ export default {
             }
             let firstStr = numBefore.join('')
             let secondStr = numAfter.join('')
-
             let resultCase = switchCase(sign, firstStr, secondStr).toString().split('')
-
             newExpression.splice(startCase, endCase - startCase + 1, ...resultCase)
           }
         }
