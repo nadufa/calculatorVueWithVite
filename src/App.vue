@@ -118,8 +118,8 @@ export default {
     };
   },
   methods: {
-    onButtonClick(newSign) {
 
+    onButtonClick(newSign) {
       if (newSign === "AC") {
         this.state.resultArray = clearExpression(this.state.resultArray);
       } else if (newSign === "TH") {
@@ -156,10 +156,6 @@ export default {
         return ["+", "-", "*", "/", "%"].includes(value);
       }
 
-      // function isMinus(value) {
-      //   return value === "-"
-      // }
-
       function clearExpression(expression) {
         let newExpression = [...expression]
         newExpression.splice(0, newExpression.length);
@@ -177,30 +173,14 @@ export default {
 
       function calculateExpression(expression) {
         let newExpression = [...expression]
+        let arrOfOperators = ["%", "*", "/", "+", "-"]
 
-        for(let i = 0; i < newExpression.length; i++) {
-          if(newExpression[i] === "%") {
-            newExpression = universalCase("%", newExpression)
-          }
-        }
-        for(let i = 0; i < newExpression.length; i++) {
-          if(newExpression[i] === "*") {
-            newExpression = universalCase("*", newExpression)
-          }
-        }
-        for(let i = 0; i < newExpression.length; i++) {
-          if(newExpression[i] === "/") {
-            newExpression = universalCase("/", newExpression)
-          }
-        }
-        for(let i = 0; i < newExpression.length; i++) {
-          if(newExpression[i] === "+") {
-            newExpression = universalCase("+", newExpression)
-          }
-        }
-        for(let i = 0; i < newExpression.length; i++) {
-          if(newExpression[i] === "-") {
-            newExpression = universalCase("-", newExpression)
+        for(let operatorPosition = 0; operatorPosition < arrOfOperators.length; operatorPosition++) {
+          let currentOperator = arrOfOperators[operatorPosition]
+          for(let i = 0; i < newExpression.length; i++) {
+            if(newExpression[i] === currentOperator) {
+              newExpression = universalCase(currentOperator, newExpression)
+            }
           }
         }
 
@@ -226,14 +206,14 @@ export default {
             }
             let firstStr = numBefore.join('')
             let secondStr = numAfter.join('')
-            let resultCase = switchCase(sign, firstStr, secondStr).toString().split('')
+            let resultCase = switchCalculate(sign, firstStr, secondStr).toString().split('')
             newExpression.splice(startCase, endCase - startCase + 1, ...resultCase)
           }
         }
         return newExpression
       }
 
-      function switchCase(sign, firstStr, secondStr) {
+      function switchCalculate(sign, firstStr, secondStr) {
         switch (sign) {
           case "%": {
             return (+firstStr * +secondStr / 100)
