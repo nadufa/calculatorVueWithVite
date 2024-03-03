@@ -1,7 +1,7 @@
 <template>
   <div :class="['Wrapper', { SeaThemeWrapper: this.state.seaTheme }]">
     <div :class="['Calculator', { SeaThemeCalculator: this.state.seaTheme }]">
-      <ResultField :seaTheme="state.seaTheme" :result="state.resultArray.join('')"/>
+      <ResultField :needResultScroll :seaTheme="state.seaTheme" :result="state.resultArray.join('')"/>
       <MyButtons
           :seaTheme="state.seaTheme"
           :updateResultValue="onButtonClick"
@@ -145,12 +145,10 @@ export default {
               (newExpression.length === 1 && (newExpression[0] === "0"))
           ) {
             newExpression[newExpression.length - 1] = value;
-          } else if (newExpression.length <= 11) {
-            newExpression.push(value);
           } else {
-            alert('Max length is 10')
+            newExpression.push(value);
           }
-        }
+          }
         return newExpression
       }
 

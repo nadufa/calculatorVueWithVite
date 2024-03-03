@@ -16,7 +16,6 @@ export default {
 };
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .ResultFieldWrap {
   background-color: rgba(211, 160, 255, 0.5);
@@ -40,7 +39,6 @@ export default {
   justify-content: end;
   align-items: center;
   padding: 10px;
-  overflow: auto;
   border-radius: 10px;
 }
 
