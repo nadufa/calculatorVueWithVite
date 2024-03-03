@@ -119,105 +119,209 @@ export default {
   },
   methods: {
     onButtonClick(newSign) {
-      let expression = this.state.resultArray;
 
       if (newSign === "AC") {
-        clearExpression();
+        this.state.resultArray = clearExpression(this.state.resultArray);
       } else if (newSign === "TH") {
         this.state.seaTheme = !this.state.seaTheme;
       } else if (newSign === "+/-") {
-        toggleSign();
+        this.state.resultArray = toggleSign(this.state.resultArray);
       } else if (newSign === "=") {
-        calculate();
+        this.state.resultArray = calculateExpression(this.state.resultArray);
       } else {
-        addToExpression(newSign);
+        this.state.resultArray = addToExpression(this.state.resultArray, newSign);
       }
 
-      function addToExpression(value) {
-        console.log(expression )
-        if (expression.length === 0 && isMathOperator(value) && value !== "-") {
+      function addToExpression(expression, value) {
+        let newExpression = [...expression]
+        if (newExpression.length === 0 && isMathOperator(value) && value !== "-") {
           alert("you can not start expression with this math operator");
         } else {
-          const lastElement = expression[expression.length - 1];
+          const lastElement = newExpression[newExpression.length - 1];
           if (
               (lastElement && isMathOperator(lastElement) && isMathOperator(value)) ||
-              (expression.length === 1 && expression[0] === "0")
+              (newExpression.length === 1 && (newExpression[0] === "0" || newExpression[0] === "Infinity"))
           ) {
-            expression[expression.length - 1] = value;
-          } else if (expression.length <= 50) {
-            expression.push(value);
+            newExpression[newExpression.length - 1] = value;
+          } else if (newExpression.length <= 50) {
+            newExpression.push(value);
           }
         }
+        return newExpression
       }
 
       function isMathOperator(value) {
         return ["+", "-", "*", "/", "%", "+/-"].includes(value);
       }
 
-      function clearExpression() {
-        expression.splice(0, expression.length);
-      }
-
-      function toggleSign() {
-        const lastElement = expression[expression.length - 1];
-        if (!isMathOperator(lastElement)) {
-          expression[expression.length - 1] = -parseFloat(lastElement);
-        }
-      }
-
-      function calculate() {
-        let result = calculateExpression();
-        clearExpression();
-
-        if (result !== "Error") {
-          result = result.toString(); // Преобразование числового результата в строку
-          let index = result.indexOf(".");
-          if (index !== -1) {
-            alert("The result will be rounded");
-            result = result.substring(0, index);
-          }
-          expression.unshift(result);
-        } else {
-          expression.unshift(result);
-        }
-      }
-
-      function calculateExpression() {
-        let expressionString = percentCase().join("");
-        let result;
-        try {
-          result = Function(`'use strict'; return (${expressionString})`)();
-        } catch (error) {
-          result = "Error";
-        }
-        return result;
-      }
-
-      function percentCase() {
+      function clearExpression(expression) {
         let newExpression = [...expression]
-        console.log(newExpression)
+        newExpression.splice(0, newExpression.length);
+        return newExpression
+      }
+
+      function toggleSign(expression) {
+        let newExpression = [...expression]
+        const lastElement = newExpression[newExpression.length - 1];
+        if (!isMathOperator(lastElement)) {
+          newExpression[newExpression.length - 1] = -parseFloat(lastElement);
+        }
+        return newExpression
+      }
+
+      // function calculate(expression) {
+      //   // let result = calculateExpression(expression);
+      //   // if (result !== "Error") {
+      //   //   result = result.toString();
+      //   //   let index = result.indexOf(".");
+      //   //   if (index !== -1) {
+      //   //     alert("The result will be rounded");
+      //   //     result = result.substring(0, index);
+      //   //   }
+      //   //   expression.unshift(result);
+      //   // } else {
+      //   //   expression.unshift(result);
+      //   // }
+      //   return calculateExpression(expression)
+      // }
+
+      function calculateExpression(expression) {
+        let newExpression = [...expression]
+        newExpression = percentCase(newExpression)
+        newExpression = multiplicationCase(newExpression)
+        newExpression = divisionCase(newExpression)
+        newExpression = plusCase(newExpression)
+        newExpression = minusCase(newExpression)
+        console.log('newExpression: ', newExpression)
+        return newExpression
+      }
+
+      function percentCase(expression) {
+        let newExpression = [...expression]
         for (let i = 0; i < newExpression.length; i++) {
           if (newExpression[i] === "%") {
             let numBefore = []
             let numAfter = []
-            let startPercentCase = null
-            let endPercentCase = null
+            let startCase = null
+            let endCase = null
             for (let j = i - 1; !isMathOperator(newExpression[j]) && j >= 0; j--) {
               numBefore.unshift(newExpression[j])
-              startPercentCase = j
+              startCase = j
             }
-            for (let j = i + 1; !isMathOperator(newExpression[j])  && j < newExpression.length; j++) {
+            for (let j = i + 1; !isMathOperator(newExpression[j]) && j < newExpression.length; j++) {
               numAfter.push(newExpression[j])
-              endPercentCase = i++
+              endCase = j
             }
             let firstStr = numBefore.join('')
             let secondStr = numAfter.join('')
-            let resultPercentCase = ((+firstStr * 100) / +secondStr).toString().split('')
-            newExpression.splice(startPercentCase, newExpression.length - endPercentCase + 1, ...resultPercentCase)
-            return newExpression
+            let resultPercentCase = (+firstStr * +secondStr / 100).toString().split('')
+            newExpression.splice(startCase, endCase - startCase + 1, ...resultPercentCase)
           }
         }
+        return newExpression
       }
+
+      function multiplicationCase(expression) {
+        let newExpression = [...expression]
+        for (let i = 0; i < newExpression.length; i++) {
+          if (newExpression[i] === "*") {
+            let numBefore = []
+            let numAfter = []
+            let startMultiplicationCase = null
+            let endMultiplicationCase = null
+            for (let j = i - 1; !isMathOperator(newExpression[j]) && j >= 0; j--) {
+              numBefore.unshift(newExpression[j])
+              startMultiplicationCase = j
+            }
+            for (let j = i + 1; !isMathOperator(newExpression[j]) && j < newExpression.length; j++) {
+              numAfter.push(newExpression[j])
+              endMultiplicationCase = j
+            }
+            let firstStr = numBefore.join('')
+            let secondStr = numAfter.join('')
+            let resultMultiplicationCase = (+firstStr * +secondStr).toString().split('')
+            newExpression.splice(startMultiplicationCase, endMultiplicationCase - startMultiplicationCase + 1, ...resultMultiplicationCase)
+          }
+        }
+        return newExpression
+      }
+
+      function divisionCase(expression) {
+        let newExpression = [...expression]
+        for (let i = 0; i < newExpression.length; i++) {
+          if (newExpression[i] === "/") {
+            let numBefore = []
+            let numAfter = []
+            let startCase = null
+            let endCase = null
+            for (let j = i - 1; !isMathOperator(newExpression[j]) && j >= 0; j--) {
+              numBefore.unshift(newExpression[j])
+              startCase = j
+            }
+            for (let j = i + 1; !isMathOperator(newExpression[j]) && j < newExpression.length; j++) {
+              numAfter.push(newExpression[j])
+              endCase = j
+            }
+            let firstStr = numBefore.join('')
+            let secondStr = numAfter.join('')
+            let resultCase = (+firstStr / +secondStr).toString().split('')
+            newExpression.splice(startCase, endCase - startCase + 1, ...resultCase)
+          }
+        }
+        return newExpression
+      }
+
+      function plusCase(expression) {
+        let newExpression = [...expression]
+        for (let i = 0; i < newExpression.length; i++) {
+          if (newExpression[i] === "+") {
+            let numBefore = []
+            let numAfter = []
+            let startCase = null
+            let endCase = null
+            for (let j = i - 1; !isMathOperator(newExpression[j]) && j >= 0; j--) {
+              numBefore.unshift(newExpression[j])
+              startCase = j
+            }
+            for (let j = i + 1; !isMathOperator(newExpression[j]) && j < newExpression.length; j++) {
+              numAfter.push(newExpression[j])
+              endCase = j
+            }
+            let firstStr = numBefore.join('')
+            let secondStr = numAfter.join('')
+            let resultCase = (+firstStr + +secondStr).toString().split('')
+            newExpression.splice(startCase, endCase - startCase + 1, ...resultCase)
+          }
+        }
+        return newExpression
+      }
+
+      function minusCase(expression) {
+        let newExpression = [...expression]
+        for (let i = 0; i < newExpression.length; i++) {
+          if (newExpression[i] === "-") {
+            let numBefore = []
+            let numAfter = []
+            let startCase = null
+            let endCase = null
+            for (let j = i - 1; !isMathOperator(newExpression[j]) && j >= 0; j--) {
+              numBefore.unshift(newExpression[j])
+              startCase = j
+            }
+            for (let j = i + 1; !isMathOperator(newExpression[j]) && j < newExpression.length; j++) {
+              numAfter.push(newExpression[j])
+              endCase = j
+            }
+            let firstStr = numBefore.join('')
+            let secondStr = numAfter.join('')
+            let resultCase = (+firstStr - +secondStr).toString().split('')
+            newExpression.splice(startCase, endCase - startCase + 1, ...resultCase)
+          }
+        }
+        return newExpression
+      }
+
+
     }
   },
 }
