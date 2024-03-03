@@ -154,6 +154,10 @@ export default {
         return ["+", "-", "*", "/", "%", "+/-"].includes(value);
       }
 
+      // function containsMathOperator(mathOperator, expression) {
+      //   return expression.includes(mathOperator);
+      // }
+
       function clearExpression(expression) {
         let newExpression = [...expression]
         newExpression.splice(0, newExpression.length);
@@ -169,37 +173,43 @@ export default {
         return newExpression
       }
 
-      // function calculate(expression) {
-      //   // let result = calculateExpression(expression);
-      //   // if (result !== "Error") {
-      //   //   result = result.toString();
-      //   //   let index = result.indexOf(".");
-      //   //   if (index !== -1) {
-      //   //     alert("The result will be rounded");
-      //   //     result = result.substring(0, index);
-      //   //   }
-      //   //   expression.unshift(result);
-      //   // } else {
-      //   //   expression.unshift(result);
-      //   // }
-      //   return calculateExpression(expression)
-      // }
-
       function calculateExpression(expression) {
         let newExpression = [...expression]
-        newExpression = percentCase(newExpression)
-        newExpression = multiplicationCase(newExpression)
-        newExpression = divisionCase(newExpression)
-        newExpression = plusCase(newExpression)
-        newExpression = minusCase(newExpression)
+
+        for(let i = 0; i < newExpression.length; i++) {
+          if(newExpression[i] === "%") {
+            newExpression = universalCase("%", newExpression)
+          }
+        }
+        for(let i = 0; i < newExpression.length; i++) {
+          if(newExpression[i] === "*") {
+            newExpression = universalCase("*", newExpression)
+          }
+        }
+        for(let i = 0; i < newExpression.length; i++) {
+          if(newExpression[i] === "/") {
+            newExpression = universalCase("/", newExpression)
+          }
+        }
+        for(let i = 0; i < newExpression.length; i++) {
+          if(newExpression[i] === "+") {
+            newExpression = universalCase("+", newExpression)
+          }
+        }
+        for(let i = 0; i < newExpression.length; i++) {
+          if(newExpression[i] === "-") {
+            newExpression = universalCase("-", newExpression)
+          }
+        }
+
         console.log('newExpression: ', newExpression)
         return newExpression
       }
 
-      function percentCase(expression) {
+      function universalCase(sign, expression) {
         let newExpression = [...expression]
         for (let i = 0; i < newExpression.length; i++) {
-          if (newExpression[i] === "%") {
+          if (newExpression[i] === sign) {
             let numBefore = []
             let numAfter = []
             let startCase = null
@@ -214,114 +224,34 @@ export default {
             }
             let firstStr = numBefore.join('')
             let secondStr = numAfter.join('')
-            let resultPercentCase = (+firstStr * +secondStr / 100).toString().split('')
-            newExpression.splice(startCase, endCase - startCase + 1, ...resultPercentCase)
-          }
-        }
-        return newExpression
-      }
 
-      function multiplicationCase(expression) {
-        let newExpression = [...expression]
-        for (let i = 0; i < newExpression.length; i++) {
-          if (newExpression[i] === "*") {
-            let numBefore = []
-            let numAfter = []
-            let startMultiplicationCase = null
-            let endMultiplicationCase = null
-            for (let j = i - 1; !isMathOperator(newExpression[j]) && j >= 0; j--) {
-              numBefore.unshift(newExpression[j])
-              startMultiplicationCase = j
-            }
-            for (let j = i + 1; !isMathOperator(newExpression[j]) && j < newExpression.length; j++) {
-              numAfter.push(newExpression[j])
-              endMultiplicationCase = j
-            }
-            let firstStr = numBefore.join('')
-            let secondStr = numAfter.join('')
-            let resultMultiplicationCase = (+firstStr * +secondStr).toString().split('')
-            newExpression.splice(startMultiplicationCase, endMultiplicationCase - startMultiplicationCase + 1, ...resultMultiplicationCase)
-          }
-        }
-        return newExpression
-      }
+            let resultCase = switchCase(sign, firstStr, secondStr).toString().split('')
 
-      function divisionCase(expression) {
-        let newExpression = [...expression]
-        for (let i = 0; i < newExpression.length; i++) {
-          if (newExpression[i] === "/") {
-            let numBefore = []
-            let numAfter = []
-            let startCase = null
-            let endCase = null
-            for (let j = i - 1; !isMathOperator(newExpression[j]) && j >= 0; j--) {
-              numBefore.unshift(newExpression[j])
-              startCase = j
-            }
-            for (let j = i + 1; !isMathOperator(newExpression[j]) && j < newExpression.length; j++) {
-              numAfter.push(newExpression[j])
-              endCase = j
-            }
-            let firstStr = numBefore.join('')
-            let secondStr = numAfter.join('')
-            let resultCase = (+firstStr / +secondStr).toString().split('')
             newExpression.splice(startCase, endCase - startCase + 1, ...resultCase)
           }
         }
         return newExpression
       }
 
-      function plusCase(expression) {
-        let newExpression = [...expression]
-        for (let i = 0; i < newExpression.length; i++) {
-          if (newExpression[i] === "+") {
-            let numBefore = []
-            let numAfter = []
-            let startCase = null
-            let endCase = null
-            for (let j = i - 1; !isMathOperator(newExpression[j]) && j >= 0; j--) {
-              numBefore.unshift(newExpression[j])
-              startCase = j
-            }
-            for (let j = i + 1; !isMathOperator(newExpression[j]) && j < newExpression.length; j++) {
-              numAfter.push(newExpression[j])
-              endCase = j
-            }
-            let firstStr = numBefore.join('')
-            let secondStr = numAfter.join('')
-            let resultCase = (+firstStr + +secondStr).toString().split('')
-            newExpression.splice(startCase, endCase - startCase + 1, ...resultCase)
+      function switchCase(sign, firstStr, secondStr) {
+        switch (sign) {
+          case "%": {
+            return (+firstStr * +secondStr / 100)
+          }
+          case "*": {
+            return (+firstStr * +secondStr)
+          }
+          case "/": {
+            return (+firstStr / +secondStr)
+          }
+          case "+": {
+            return (+firstStr + +secondStr)
+          }
+          case "-": {
+            return (+firstStr - +secondStr)
           }
         }
-        return newExpression
       }
-
-      function minusCase(expression) {
-        let newExpression = [...expression]
-        for (let i = 0; i < newExpression.length; i++) {
-          if (newExpression[i] === "-") {
-            let numBefore = []
-            let numAfter = []
-            let startCase = null
-            let endCase = null
-            for (let j = i - 1; !isMathOperator(newExpression[j]) && j >= 0; j--) {
-              numBefore.unshift(newExpression[j])
-              startCase = j
-            }
-            for (let j = i + 1; !isMathOperator(newExpression[j]) && j < newExpression.length; j++) {
-              numAfter.push(newExpression[j])
-              endCase = j
-            }
-            let firstStr = numBefore.join('')
-            let secondStr = numAfter.join('')
-            let resultCase = (+firstStr - +secondStr).toString().split('')
-            newExpression.splice(startCase, endCase - startCase + 1, ...resultCase)
-          }
-        }
-        return newExpression
-      }
-
-
     }
   },
 }
