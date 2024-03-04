@@ -138,7 +138,9 @@ export default {
           console.log("Please start expression with number");
         } else if ([...newExpression].join("") === "Infinity"
             || newExpression[0] === "-"
-            || newExpression[0] === "~") {
+            || newExpression[0] === "~"
+            || newExpression.includes(".")
+        ) {
           newExpression = addToExpression([], value)
         } else {
           const lastElement = newExpression[newExpression.length - 1];
