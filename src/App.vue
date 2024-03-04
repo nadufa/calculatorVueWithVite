@@ -134,9 +134,11 @@ export default {
 
       function addToExpression(expression, value) {
         let newExpression = [...expression]
-        if (newExpression.length === 0 && isMathOperator(value) && value !== "-") {
-          alert("you can not start expression with this math operator");
-        } else if([...newExpression].join("") === "Infinity") {
+        if (newExpression.length === 0 && isMathOperator(value)) {
+          console.log("Please start expression with number");
+        } else if ([...newExpression].join("") === "Infinity"
+            || newExpression[0] === "-"
+            || newExpression[0] === "~") {
           newExpression = addToExpression([], value)
         } else {
           const lastElement = newExpression[newExpression.length - 1];
@@ -148,7 +150,7 @@ export default {
           } else {
             newExpression.push(value);
           }
-          }
+        }
         return newExpression
       }
 
@@ -164,9 +166,25 @@ export default {
 
       function toggleSign(expression) {
         let newExpression = [...expression]
-        const lastElement = newExpression[newExpression.length - 1];
-        if (!isMathOperator(lastElement)) {
-          newExpression[newExpression.length - 1] = -parseFloat(lastElement);
+        for (let i = newExpression.length - 1; i >= 0; i--) {
+          if (isMathOperator(newExpression[i]) && newExpression[i] !== "%" && !isMathOperator(newExpression[i] - 1)) {
+            if (newExpression[i] === "+") {
+              newExpression[i] = "-"
+              i = 0
+            }
+            if (newExpression[i] === "-") {
+              newExpression[i] = "+"
+              i = 0
+            }
+            if (newExpression[i] === "*") {
+              newExpression[i] = "/"
+              i = 0
+            }
+            if (newExpression[i] === "/") {
+              newExpression[i] = "*"
+              i = 0
+            }
+          }
         }
         return newExpression
       }
@@ -175,16 +193,24 @@ export default {
         let newExpression = [...expression]
         let arrOfOperators = ["%", "*", "/", "+", "-"]
 
-        for(let operatorPosition = 0; operatorPosition < arrOfOperators.length; operatorPosition++) {
+        for (let operatorPosition = 0; operatorPosition < arrOfOperators.length; operatorPosition++) {
           let currentOperator = arrOfOperators[operatorPosition]
-          for(let i = 0; i < newExpression.length; i++) {
-            if(newExpression[i] === currentOperator) {
+          for (let i = 0; i < newExpression.length; i++) {
+            if (newExpression[i] === currentOperator) {
               newExpression = universalCase(currentOperator, newExpression)
             }
           }
         }
-
-        console.log('newExpression: ', newExpression)
+        if (newExpression.length >= 10) {
+          let dot = newExpression.indexOf(".")
+          if(dot >= 9 || dot === -1) {
+            return newExpression
+          } else {
+            return ["~", ...newExpression.filter((el, index) => {
+              return index <= 10
+            })]
+          }
+        }
         return newExpression
       }
 
