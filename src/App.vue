@@ -206,7 +206,11 @@ export default {
         if (newExpression.length >= 10) {
           let dot = newExpression.indexOf(".")
           if(dot >= 9 || dot === -1) {
-            return newExpression
+            let updatedExpression = newExpression.filter((el, index) => {
+              return index <= 8
+            })
+            let rest = (newExpression.length - updatedExpression.length).toString()
+            return ["~", ...updatedExpression, "e", rest]
           } else {
             return ["~", ...newExpression.filter((el, index) => {
               return index <= 10
